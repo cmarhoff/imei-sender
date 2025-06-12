@@ -1,6 +1,6 @@
 # IMEI Sender
 
-GTK-App to enter, validate and transmit an IMEI to the EG25-G-Module in the PinePhone Pro via AT-comman, by ChatGPT.
+GTK-App to enter, validate and transmit an IMEI to the EG25-G-Module in the PinePhone Pro via AT-command, by ChatGPT.
 
 ## 🔧 Requirements
 
