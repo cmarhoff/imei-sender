@@ -16,10 +16,10 @@ class IMEIWindow(Gtk.Window):
         self.add(box)
 
         self.entry = Gtk.Entry()
-        self.entry.set_placeholder_text("IMEI eingeben (15 Ziffern)")
+        self.entry.set_placeholder_text("Enter IMEI (15 digits)")
         box.pack_start(self.entry, True, True, 0)
 
-        self.button = Gtk.Button(label="Senden")
+        self.button = Gtk.Button(label="Send")
         self.button.connect("clicked", self.on_send_clicked)
         box.pack_start(self.button, True, True, 0)
 
@@ -29,15 +29,15 @@ class IMEIWindow(Gtk.Window):
     def on_send_clicked(self, widget):
         imei = self.entry.get_text().strip()
         if not is_valid_imei(imei):
-            self.status.set_text("Ungültige IMEI!")
+            self.status.set_text("Invalid IMEI!")
             return
 
         try:
             command = f'echo -e "AT+EGMR=1,7,\\"{imei}\\"\r" > /dev/ttyUSB2'
             subprocess.run(command, shell=True, check=True)
-            self.status.set_text("IMEI gesendet.")
+            self.status.set_text("IMEI sent.")
         except Exception as e:
-            self.status.set_text(f"Fehler: {e}")
+            self.status.set_text(f"Error: {e}")
 
 if __name__ == "__main__":
     win = IMEIWindow()
