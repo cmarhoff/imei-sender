@@ -6,12 +6,25 @@ GTK-App to enter, validate and transmit an IMEI to the EG25-G-Module in the Pine
 
 - Python 3
 - GTK 3 (`python3-gi`, `gir1.2-gtk-3.0`)
-- access rights to `/dev/ttyUSB2`
+  sudo apt install python3 python3-gi gir1.2-gtk-3.0 minicom
 
 ## 🚀 Installation & Execution  
 
 ```bash
 git clone https://github.com/cmarhoff/imei-sender.git
 cd imei-sender
-chmod +x run.sh
+chmod +x install.sh
+./install.sh
+
+Or download imei-sender-1.0.deb and
+
+sudo dpkg -i imei-sender-1.0.deb
+
+
+Start the app:
+
+Via the application menu ("IMEI Sender")
+
+Or directly:
+
 ./run.sh
