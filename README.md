@@ -16,10 +16,6 @@ cd imei-sender
 chmod +x install.sh
 ./install.sh
 
-Or download imei-sender-1.0.deb and
-
-sudo dpkg -i imei-sender-1.0.deb
-
 
 Start the app:
 
