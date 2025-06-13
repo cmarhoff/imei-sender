@@ -53,6 +53,8 @@ class IMEIWindow(Gtk.Window):
         grid.attach(Gtk.Label(label="History:"), 0, 4, 1, 1)
         grid.attach(self.history, 1, 4, 3, 1)
 
+        # tbd read current imei, display it somewhere
+
     def refresh_ports(self):
         ports = glob.glob("/dev/ttyUSB*")
         n = 0
@@ -134,6 +136,7 @@ class IMEIWindow(Gtk.Window):
             else:
                 self.status.set_markup(f"<span foreground=\"red\">IMEI sent, status {aanswer}</span>")
             self.save_to_history(imei)
+            # tbd read current imei, display it somewhere
         except Exception as e:
             self.status.set_markup(f'<span foreground="red">Error: {e}</span>')
 
