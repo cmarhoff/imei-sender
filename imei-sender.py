@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import gi
-import subprocess
 from validate import is_valid_imei
 
 gi.require_version("Gtk", "3.0")
@@ -33,8 +32,9 @@ class IMEIWindow(Gtk.Window):
             return
 
         try:
-            command = f'echo -e "AT+EGMR=1,7,\\"{imei}\\"\r" > /dev/ttyUSB2'
-            subprocess.run(command, shell=True, check=True)
+            command = f'AT+EGMR=1,7,"{imei}"\r'
+            with open("/dev/ttyUSB2", "wb") as device:
+                device.write(command.encode())
             self.status.set_text("IMEI sent.")
         except Exception as e:
             self.status.set_text(f"Error: {e}")
