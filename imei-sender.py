@@ -15,7 +15,7 @@ class IMEIWindow(Gtk.Window):
         self.set_border_width(20)
         self.set_default_size(500, 320)
 
-        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.jpg")
         if os.path.exists(icon_path):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
             self.set_icon(pixbuf)
