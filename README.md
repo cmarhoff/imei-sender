@@ -16,6 +16,7 @@ cd imei-sender
 chmod +x install.sh
 ./install.sh
 
+Warning: an active ModemManager will inhibit a normal user from using the modem!
 
 Start the app:
 

@@ -1,3 +1,3 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-python3 imei_sender.py
+python3 imei-sender.py
