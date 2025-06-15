@@ -15,7 +15,6 @@ class IMEIWindow(Gtk.Window):
         self.set_border_width(20)
         self.set_default_size(500, 320)
 
-        # Set window icon
         icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
         if os.path.exists(icon_path):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
@@ -24,7 +23,6 @@ class IMEIWindow(Gtk.Window):
         self.grid = Gtk.Grid(column_spacing=12, row_spacing=12, margin=10)
         self.add(self.grid)
 
-        # IMEI input
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text("Enter IMEI (15 digits)")
         self.entry.set_hexpand(True)
@@ -35,12 +33,10 @@ class IMEIWindow(Gtk.Window):
         self.grid.attach(imei_label, 0, 0, 1, 1)
         self.grid.attach(self.entry, 1, 0, 2, 1)
 
-        # Paste button
         paste_button = Gtk.Button(label="📋 Paste")
         paste_button.connect("clicked", self.on_paste_clicked)
         self.grid.attach(paste_button, 3, 0, 1, 1)
 
-        # Port selection
         port_label = Gtk.Label(label="Port:")
         port_label.set_markup("<b>Port:</b>")
         port_label.set_halign(Gtk.Align.START)
@@ -49,18 +45,15 @@ class IMEIWindow(Gtk.Window):
         self.grid.attach(port_label, 0, 1, 1, 1)
         self.grid.attach(self.port_combo, 1, 1, 3, 1)
 
-        # Send button
         self.button = Gtk.Button(label="Send IMEI")
         self.button.get_style_context().add_class("suggested-action")
         self.button.connect("clicked", self.on_send_clicked)
         self.grid.attach(self.button, 0, 2, 4, 1)
 
-        # Status label
         self.status = Gtk.Label(label="")
         self.status.set_line_wrap(True)
         self.grid.attach(self.status, 0, 3, 4, 1)
 
-        # History dropdown
         history_label = Gtk.Label(label="History:")
         history_label.set_markup("<b>History:</b>")
         history_label.set_halign(Gtk.Align.START)
@@ -75,15 +68,8 @@ class IMEIWindow(Gtk.Window):
         info_button.connect("clicked", self.on_info_clicked)
         self.grid.attach(info_button, 0, 5, 1, 1)
 
-        self.info_box = Gtk.TextView()
-        self.info_box.set_editable(False)
-        self.info_box.set_cursor_visible(False)
-        self.info_box.set_wrap_mode(Gtk.WrapMode.WORD)
-        scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.set_hexpand(True)
-        scrolled_window.set_vexpand(True)
-        scrolled_window.add(self.info_box)
-        self.grid.attach(scrolled_window, 1, 5, 3, 1)
+        self.info_grid = Gtk.Grid(column_spacing=12, row_spacing=6, margin_top=6)
+        self.grid.attach(self.info_grid, 1, 5, 3, 1)
 
     def refresh_ports(self):
         ports = glob.glob("/dev/ttyUSB*")
@@ -161,7 +147,6 @@ class IMEIWindow(Gtk.Window):
             self.status.set_markup('<span foreground="red">No serial port selected!</span>')
             return
 
-        # Confirm dialog
         dialog = Gtk.MessageDialog(
             transient_for=self,
             flags=0,
@@ -189,14 +174,22 @@ class IMEIWindow(Gtk.Window):
             self.status.set_markup('<span foreground="red">No serial port selected!</span>')
             return
 
-        commands = ["AT+GSN", "AT+GMI", "AT+GMM", "AT+GMR"]
-        results = []
-        for cmd in commands:
-            result = self.send_at_command(port, cmd)
-            results.append(f"{cmd}:\n{result}\n")
+        # Clear old info
+        for child in self.info_grid.get_children():
+            self.info_grid.remove(child)
 
-        buffer = self.info_box.get_buffer()
-        buffer.set_text("\n".join(results))
+        labels = ["IMEI", "Manufacturer", "Model", "Version"]
+        commands = ["AT+GSN", "AT+GMI", "AT+GMM", "AT+QGMR"]
+        for i, cmd in enumerate(commands):
+            result = self.send_at_command(port, cmd)
+            clean = result.replace("OK", "").strip() if "OK" in result else "-"
+            label = Gtk.Label(label=labels[i] + ":", xalign=0)
+            value = Gtk.Label(label=clean, xalign=0)
+            label.set_markup(f"<b>{labels[i]}:</b>")
+            self.info_grid.attach(label, 0, i, 1, 1)
+            self.info_grid.attach(value, 1, i, 1, 1)
+
+        self.info_grid.show_all()
 
 if __name__ == "__main__":
     win = IMEIWindow()
