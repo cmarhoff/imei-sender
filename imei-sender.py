@@ -2,27 +2,37 @@
 import gi
 import os
 import glob
-import os
-import re
+import time
+import select
 from validate import is_valid_imei
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 class IMEIWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="IMEI Sender")
-        self.set_border_width(15)
-        self.set_default_size(400, 200)
+        self.set_border_width(20)
+        self.set_default_size(450, 250)
 
-        grid = Gtk.Grid(column_spacing=10, row_spacing=10)
+        # Set window icon
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        if os.path.exists(icon_path):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
+            self.set_icon(pixbuf)
+
+        grid = Gtk.Grid(column_spacing=12, row_spacing=12, margin=10)
         self.add(grid)
 
         # IMEI input
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text("Enter IMEI (15 digits)")
+        self.entry.set_hexpand(True)
         self.entry.connect("changed", self.on_entry_changed)
-        grid.attach(Gtk.Label(label="IMEI:"), 0, 0, 1, 1)
+        imei_label = Gtk.Label(label="IMEI:")
+        imei_label.set_markup("<b>IMEI:</b>")
+        imei_label.set_halign(Gtk.Align.START)
+        grid.attach(imei_label, 0, 0, 1, 1)
         grid.attach(self.entry, 1, 0, 2, 1)
 
         # Paste button
@@ -31,29 +41,35 @@ class IMEIWindow(Gtk.Window):
         grid.attach(paste_button, 3, 0, 1, 1)
 
         # Port selection
+        port_label = Gtk.Label(label="Port:")
+        port_label.set_markup("<b>Port:</b>")
+        port_label.set_halign(Gtk.Align.START)
         self.port_combo = Gtk.ComboBoxText()
         self.refresh_ports()
-        grid.attach(Gtk.Label(label="Port:"), 0, 1, 1, 1)
+        grid.attach(port_label, 0, 1, 1, 1)
         grid.attach(self.port_combo, 1, 1, 3, 1)
 
         # Send button
         self.button = Gtk.Button(label="Send IMEI")
+        self.button.get_style_context().add_class("suggested-action")
         self.button.connect("clicked", self.on_send_clicked)
         grid.attach(self.button, 0, 2, 4, 1)
 
         # Status label
         self.status = Gtk.Label(label="")
+        self.status.set_line_wrap(True)
         grid.attach(self.status, 0, 3, 4, 1)
 
         # History dropdown
+        history_label = Gtk.Label(label="History:")
+        history_label.set_markup("<b>History:</b>")
+        history_label.set_halign(Gtk.Align.START)
         self.history = Gtk.ComboBoxText()
         self.history.set_entry_text_column(0)
         self.load_history()
         self.history.connect("changed", self.on_history_changed)
-        grid.attach(Gtk.Label(label="History:"), 0, 4, 1, 1)
+        grid.attach(history_label, 0, 4, 1, 1)
         grid.attach(self.history, 1, 4, 3, 1)
-
-        # tbd read current imei, display it somewhere
 
     def refresh_ports(self):
         ports = glob.glob("/dev/ttyUSB*")
@@ -122,23 +138,34 @@ class IMEIWindow(Gtk.Window):
         if response != Gtk.ResponseType.OK:
             return
 
+        at_command = f'AT+EGMR=1,7,"{imei}"\r\n'
         try:
-            at_command = f'AT+EGMR=1,7,"{imei}"\r\n'
-            answer = ""
-            fd = os.open(port, os.O_RDWR)
+            fd = os.open(port, os.O_RDWR | os.O_NONBLOCK)
             os.write(fd, at_command.encode())
-            answer = os.read(fd, 100)
+
+            buffer = b""
+            timeout = 2  # seconds
+            start = time.time()
+
+            while True:
+                rlist, _, _ = select.select([fd], [], [], timeout)
+                if rlist:
+                    chunk = os.read(fd, 100)
+                    buffer += chunk
+                    if b"OK" in buffer or b"ERROR" in buffer:
+                        break
+                elif time.time() - start > timeout:
+                    break
+
             os.close(fd)
-            aanswer = answer.decode('utf-8')
-            aanswer = re.sub(r'[^\\x20-\\x7E]', '', aanswer)
-            if aanswer == "OK":
-                self.status.set_markup(f"<span foreground=\"green\">IMEI sent successfully</span>")
+            aanswer = buffer.decode('utf-8', errors='replace').strip()
+            if "OK" in aanswer:
+                self.status.set_markup(f"<span foreground='green'>IMEI sent successfully</span>")
+                self.save_to_history(imei)
             else:
-                self.status.set_markup(f"<span foreground=\"red\">IMEI sent, status {aanswer}</span>")
-            self.save_to_history(imei)
-            # tbd read current imei, display it somewhere
-        except Exception as e:
-            self.status.set_markup(f'<span foreground="red">Error: {e}</span>')
+                self.status.set_markup(f"<span foreground='red'>IMEI sent, status: {aanswer}</span>")
+        except OSError as e:
+            self.status.set_markup(f"<span foreground='red'>OS error: {e}</span>")
 
 if __name__ == "__main__":
     win = IMEIWindow()
