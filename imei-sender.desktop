@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=IMEI Sender
-Exec=/home/cmarhoff/imei-sender/run.sh
-Icon=utilities-terminal
-Type=Application
-Categories=Utility;
+Comment=Send IMEI to EG25 modem
+Exec=python3 /home/manjaro/imei_sender/run.sh
+Icon=/home/manjaro/imei_sender/icon.jpg
 Terminal=false
+Type=Application
+Categories=Utility;System;
+StartupNotify=false

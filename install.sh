@@ -10,14 +10,9 @@ LAUNCHER_PATH="$LAUNCHER_DIR/imei-sender.desktop"
 
 echo "🔧 Starting IMEI Sender installation..."
 
-# Install dependencies
-echo "📦 Installing required packages (Python GTK bindings)..."
-sudo apt update
-sudo apt install -y python3-gi gir1.2-gtk-3.0
-
-# Add user to 'dialout' group for modem access
-echo "🔐 Adding user to 'dialout' group (required for modem access)..."
-sudo usermod -aG dialout "$USER"
+# Add user to 'uucp' group for modem access
+echo "🔐 Adding user to 'uucp' group (required for modem access)..."
+sudo usermod -aG uucp "$USER"
 echo "👉 Please log out and back in for group changes to take effect."
 
 # Make launch script executable
