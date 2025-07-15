@@ -31,28 +31,28 @@ class IMEIWindow(Gtk.Window):
         imei_label.set_markup("<b>IMEI:</b>")
         imei_label.set_halign(Gtk.Align.START)
         self.grid.attach(imei_label, 0, 0, 1, 1)
-        self.grid.attach(self.entry, 1, 0, 2, 1)
+        self.grid.attach(self.entry, 1, 0, 3, 1)
 
         paste_button = Gtk.Button(label="📋 Paste")
         paste_button.connect("clicked", self.on_paste_clicked)
-        self.grid.attach(paste_button, 3, 0, 1, 1)
+        self.grid.attach(paste_button, 1, 1, 1, 1)
 
         port_label = Gtk.Label(label="Port:")
         port_label.set_markup("<b>Port:</b>")
         port_label.set_halign(Gtk.Align.START)
         self.port_combo = Gtk.ComboBoxText()
         self.refresh_ports()
-        self.grid.attach(port_label, 0, 1, 1, 1)
-        self.grid.attach(self.port_combo, 1, 1, 3, 1)
+        self.grid.attach(port_label, 0, 2, 1, 1)
+        self.grid.attach(self.port_combo, 1, 2, 3, 1)
 
         self.button = Gtk.Button(label="Send IMEI")
         self.button.get_style_context().add_class("suggested-action")
         self.button.connect("clicked", self.on_send_clicked)
-        self.grid.attach(self.button, 0, 2, 4, 1)
+        self.grid.attach(self.button, 0, 3, 4, 1)
 
         self.status = Gtk.Label(label="")
         self.status.set_line_wrap(True)
-        self.grid.attach(self.status, 0, 3, 4, 1)
+        self.grid.attach(self.status, 0, 4, 4, 1)
 
         history_label = Gtk.Label(label="History:")
         history_label.set_markup("<b>History:</b>")
@@ -61,15 +61,15 @@ class IMEIWindow(Gtk.Window):
         self.history.set_entry_text_column(0)
         self.load_history()
         self.history.connect("changed", self.on_history_changed)
-        self.grid.attach(history_label, 0, 4, 1, 1)
-        self.grid.attach(self.history, 1, 4, 3, 1)
+        self.grid.attach(history_label, 0, 5, 1, 1)
+        self.grid.attach(self.history, 1, 5, 3, 1)
 
         info_button = Gtk.Button(label="Info")
         info_button.connect("clicked", self.on_info_clicked)
-        self.grid.attach(info_button, 0, 5, 1, 1)
+        self.grid.attach(info_button, 0, 6, 1, 1)
 
         self.info_grid = Gtk.Grid(column_spacing=12, row_spacing=6, margin_top=6)
-        self.grid.attach(self.info_grid, 1, 5, 3, 1)
+        self.grid.attach(self.info_grid, 0, 7, 3, 1)
 
     def refresh_ports(self):
         ports = glob.glob("/dev/ttyUSB*")
@@ -179,7 +179,7 @@ class IMEIWindow(Gtk.Window):
             self.info_grid.remove(child)
 
         labels = ["IMEI", "Manufacturer", "Model", "Version"]
-        commands = ["AT+GSN", "AT+GMI", "AT+GMM", "AT+QGMR"]
+        commands = ["AT+GSN", "AT+GMI", "AT+GMM", "AT+GMR"]
         for i, cmd in enumerate(commands):
             result = self.send_at_command(port, cmd)
             clean = result.replace("OK", "").strip() if "OK" in result else "-"
