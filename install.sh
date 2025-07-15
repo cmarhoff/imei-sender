@@ -22,6 +22,10 @@ chmod +x "$APP_DIR/run.sh"
 echo "📁 Creating desktop launcher..."
 mkdir -p "$LAUNCHER_DIR"
 sed "s|Exec=.*|Exec=$APP_DIR/run.sh|" "$DESKTOP_FILE" > "$LAUNCHER_PATH"
+chmod +x "$LAUNCHER_PATH"
+update-desktop-database "$LAUNCHER_DIR"
+sudo systemctl stop ModemManager
+sudo systemctl disable ModemManager
 
 echo "✅ Installation complete!"
 echo "💡 You can launch the app from your application menu or run:"
