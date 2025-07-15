@@ -161,6 +161,7 @@ class IMEIWindow(Gtk.Window):
         if response != Gtk.ResponseType.OK:
             return
 
+        reply = self.send_at_command(port, "ATE0")
         reply = self.send_at_command(port, f'AT+EGMR=1,7,"{imei}"')
         if "OK" in reply:
             self.status.set_markup("<span foreground='green'>IMEI sent successfully</span>")
@@ -177,6 +178,8 @@ class IMEIWindow(Gtk.Window):
         # Clear old info
         for child in self.info_grid.get_children():
             self.info_grid.remove(child)
+
+        self.send_at_command(port, "ATE0")
 
         labels = ["IMEI", "Manufacturer", "Model", "Version"]
         commands = ["AT+GSN", "AT+GMI", "AT+GMM", "AT+GMR"]
